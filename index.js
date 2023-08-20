@@ -11,18 +11,18 @@ app.use(cors());
 const httpServer = createServer();
 const io = new Server(httpServer, {
   cors: {
-    origin: "*",
+    origin: "https://goldratt-game23.onrender.com",
     methods: ["GET", "POST"],
   },
   transports: ["websocket"],
 });
+
 
 const roomToUsers = new Map();
 
 io.on("connection", (socket) => {
   let currentRoom = null;
   let userId = null;
-  console.log("wow");
 
   socket.on("join-room", (user) => {
     socket.join(user.roomId);
@@ -36,15 +36,12 @@ io.on("connection", (socket) => {
     users.push(user);
     io.to(user.roomId).emit("scoreboard-updated", users);
     roomToUsers.set(user.roomId, users);
-    console.log("joind room", user);
   });
 
   socket.on("update-scoreboard", (userId, score, gameId) => {
-    // console.log("updating");
     if (roomToUsers.has(gameId)) {
       const users = roomToUsers.get(gameId);
       const userIndex = users.findIndex((user) => user.userId === userId);
-      // console.log(userIndex, "index");       
 
       if (userIndex !== -1) {
         users[userIndex].score = score;
@@ -70,24 +67,17 @@ io.on("connection", (socket) => {
       
   socket.on("get-scoreboard", () => {
     if (roomToUsers.has(currentRoom)) {
-      // console.log("recived", currentRoom);
       const users = roomToUsers.get(currentRoom);
-      // console.log(users, "users");
       io.to(currentRoom).emit("scoreboard-updated", users);
     }
   });
 
   socket.on("leave-room", (gameId, userId) => {
-    // console.log(roomToUsers);
-    console.log("hey", roomToUsers.has(gameId), gameId);
     if (roomToUsers.has(gameId)) {
-      console.log("leaving");
       const users = roomToUsers.get(gameId);
       const index = users.findIndex((user) => user.userId === userId);
-      // console.log(index);
       if (index !== -1) {
         users.splice(index, 1);
-        console.log(users, "users", users.length);
         if (!users.length) {
           roomToUsers.delete(gameId);
         } else {
@@ -96,8 +86,6 @@ io.on("connection", (socket) => {
         }
       }
     }
-
-    // console.log(`User with userId ${userId} has disconnected`);
   });
 });
 
