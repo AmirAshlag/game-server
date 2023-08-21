@@ -6,9 +6,13 @@ const { Server } = require("socket.io");
 const app = express();
 app.use(express.json());
 app.use(cors());
-// const { gameDataRouter } = require("./routers/gameData-router");
 
-const httpServer = createServer();
+app.use("/", (req, res, next) => {
+  console.log("hey");
+  next();
+});
+
+const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
     origin: "https://goldratt-game23.onrender.com",
@@ -16,7 +20,6 @@ const io = new Server(httpServer, {
   },
   transports: ["websocket"],
 });
-
 
 const roomToUsers = new Map();
 
@@ -63,8 +66,8 @@ io.on("connection", (socket) => {
         io.to(currentRoom).emit("scoreboard-updated", users);
       }
     }
-  }); 
-      
+  });
+
   socket.on("get-scoreboard", () => {
     if (roomToUsers.has(currentRoom)) {
       const users = roomToUsers.get(currentRoom);
@@ -92,5 +95,7 @@ io.on("connection", (socket) => {
 httpServer.listen("7070", () => {
   console.log("listening on port 7070");
 });
+
+
 
 // app.use("/data", gameDataRouter);
