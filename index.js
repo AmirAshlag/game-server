@@ -10,7 +10,7 @@ app.use(cors());
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: "https://goldratt-game23.onrender.com",
+    origin: "*",
     methods: ["GET", "POST"],
   },
   transports: ["websocket"],
@@ -48,6 +48,19 @@ io.on("connection", (socket) => {
       }
     }
   });
+
+    socket.on("update-chests-landed", (userId, chestsLanded, gameId) => {
+      if (roomToUsers.has(gameId)) {
+        const users = roomToUsers.get(gameId);
+        const userIndex = users.findIndex((user) => user.userId === userId);
+
+        if (userIndex !== -1) {
+          users[userIndex].chestsLanded = chestsLanded;
+          roomToUsers.set(gameId, users);
+          // io.to(gameId).emit("scoreboard-updated", users);
+        }
+      }
+    });
 
   socket.on("finished-game", () => {
     if (roomToUsers.has(currentRoom)) {
