@@ -7,6 +7,8 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+const port = process.env.PORT || "3000";
+
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
@@ -49,18 +51,18 @@ io.on("connection", (socket) => {
     }
   });
 
-    socket.on("update-chests-landed", (userId, chestsLanded, gameId) => {
-      if (roomToUsers.has(gameId)) {
-        const users = roomToUsers.get(gameId);
-        const userIndex = users.findIndex((user) => user.userId === userId);
+  socket.on("update-chests-landed", (userId, chestsLanded, gameId) => {
+    if (roomToUsers.has(gameId)) {
+      const users = roomToUsers.get(gameId);
+      const userIndex = users.findIndex((user) => user.userId === userId);
 
-        if (userIndex !== -1) {
-          users[userIndex].chestsLanded = chestsLanded;
-          roomToUsers.set(gameId, users);
-          // io.to(gameId).emit("scoreboard-updated", users);
-        }
+      if (userIndex !== -1) {
+        users[userIndex].chestsLanded = chestsLanded;
+        roomToUsers.set(gameId, users);
+        // io.to(gameId).emit("scoreboard-updated", users);
       }
-    });
+    }
+  });
 
   socket.on("finished-game", () => {
     if (roomToUsers.has(currentRoom)) {
@@ -100,12 +102,10 @@ io.on("connection", (socket) => {
   });
 });
 
-httpServer.listen("7070", () => {
-  console.log("listening on port 7070");
+httpServer.listen(port, () => {
+  console.log(`listening on port ${port}`);
 });
 
-
-
-app.use("/", (req, res)=>{
-  res.send("succesful!")
+app.use("/", (req, res) => {
+  res.send("succesful!");
 });
