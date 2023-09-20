@@ -106,4 +106,6 @@ httpServer.listen("7070", () => {
 
 
 
-// app.use("/data", gameDataRouter);
+app.use("/", (req, res)=>{
+  res.send("succesful!")
+});
