@@ -18,7 +18,16 @@ const io = new Server(httpServer, {
   transports: ["websocket"],
 });
 
+
 const roomToUsers = new Map();
+
+function generateUniqueRoomId() {
+  let roomId;
+  do {
+    roomId = Math.floor(10000 + Math.random() * 90000).toString();
+  } while (roomToUsers.has(roomId));
+  return roomId;
+}
 
 io.on("connection", (socket) => {
   let currentRoom = null;
@@ -38,6 +47,11 @@ io.on("connection", (socket) => {
     roomToUsers.set(user.roomId, users);
   });
 
+    socket.on("get-new-roomId", () => {
+      const newRoomId = generateUniqueRoomId();
+      socket.emit("new-roomId-generated", newRoomId);
+    });
+
   socket.on("update-scoreboard", (userId, score, gameId) => {
     if (roomToUsers.has(gameId)) {
       const users = roomToUsers.get(gameId);
@@ -47,6 +61,7 @@ io.on("connection", (socket) => {
         users[userIndex].score = score;
         roomToUsers.set(gameId, users);
         io.to(gameId).emit("scoreboard-updated", users);
+        console.log(users[userIndex]);
       }
     }
   });
@@ -101,7 +116,8 @@ io.on("connection", (socket) => {
     }
   });
 });
-
+// change back to port to make it work
+//  change to 2000 to make it local
 httpServer.listen(port, () => {
   console.log(`listening on port ${port}`);
 });
